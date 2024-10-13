@@ -2,11 +2,11 @@ import React from 'react';
 
 interface Contact {
   id?: number;
-  contact: string;
   name: string;
-  type: string;
-  origem: string;
   description: string;
+  type: string;
+  origin: string;
+  contact: string;
 }
 
 interface ContactsListProps {
@@ -16,36 +16,20 @@ interface ContactsListProps {
 }
 
 const ContactsList: React.FC<ContactsListProps> = ({ contacts, onEdit, onDelete }) => {
-  if (contacts.length === 0) {
+  if (!contacts || contacts.length === 0) {
     return <p>Nenhum contato encontrado.</p>;
   }
 
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Contato</th>
-          <th>Nome</th>
-          <th>Tipo</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {contacts.map((contact) => (
-          <tr key={contact.id}>
-            <td>{contact.id}</td>
-            <td>{contact.contact}</td>
-            <td>{contact.name}</td>
-            <td>{contact.type}</td>
-            <td>
-              <button onClick={() => onEdit(contact)}>Editar</button>
-              <button onClick={() => onDelete(contact.id!)}>Deletar</button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <ul>
+      {contacts.map(contact => (
+        <li key={contact.id}>
+          {contact.name} - {contact.description} ({contact.type} - {contact.origin})
+          <button onClick={() => onEdit(contact)}>Editar</button>
+          <button onClick={() => onDelete(contact.id!)}>Apagar</button>
+        </li>
+      ))}
+    </ul>
   );
 };
 

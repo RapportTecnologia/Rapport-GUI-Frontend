@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 interface Contact {
   id?: number;
-  contact: string | null; // Pode ser string ou null
-  name: string | null; // Pode ser string ou null
-  description: string | null; // Pode ser string ou null
+  name: string;
+  description: string;
 }
 
 interface Bot {
@@ -14,132 +13,102 @@ interface Bot {
 }
 
 interface AssociationTabProps {
-  contacts: Contact[];
-  bots: Bot[];
+  fetchContacts: (page: number, searchTerm: string) => Promise<{ contacts: Contact[], total: number }>;
+  fetchBots: (page: number, searchTerm: string) => Promise<{ bots: Bot[], total: number }>;
+  associateBotToContact: (contactId: number, botId: number) => Promise<void>;
 }
 
-const AssociationTab: React.FC<AssociationTabProps> = ({ contacts, bots }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedContact, setSelectedContact] = useState<Contact | undefined>(undefined);
-  const [availableBots, setAvailableBots] = useState<Bot[]>([]);
-  const [associatedBots, setAssociatedBots] = useState<Bot[]>([]);
-  const [error, setError] = useState<string | null>(null);
+const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBots, associateBotToContact }) => {
+  const [selectedContactId, setSelectedContactId] = useState<number | undefined>(undefined);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [bots, setBots] = useState<Bot[]>([]);
+  const [contactSearchTerm, setContactSearchTerm] = useState('');
+  const [botSearchTerm, setBotSearchTerm] = useState('');
+  const [contactPage, setContactPage] = useState(1);
+  const [botPage, setBotPage] = useState(1);
+  const [totalContacts, setTotalContacts] = useState(0);
+  const [totalBots, setTotalBots] = useState(0);
+  const itemsPerPage = 10;
 
-  // Filtrar contatos por nome ou descrição
-  const filteredContacts = contacts.filter(contact =>
-    (contact.name && contact.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (contact.description && contact.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Função para carregar contatos, "memorize" com useCallback
+  const loadContacts = useCallback(async (page: number, searchTerm: string) => {
+    const { contacts, total } = await fetchContacts(page, searchTerm);
+    setContacts(contacts);
+    setTotalContacts(total);
+  }, [fetchContacts]);
 
-  // Função para buscar bots associados ao contato selecionado
+  // Função para carregar bots, "memorize" com useCallback
+  const loadBots = useCallback(async (page: number, searchTerm: string) => {
+    const { bots, total } = await fetchBots(page, searchTerm);
+    setBots(bots);
+    setTotalBots(total);
+  }, [fetchBots]);
+
+  // Carregar contatos ao carregar o componente ou quando searchTerm ou página mudarem
   useEffect(() => {
-    if (selectedContact) {
-      fetch(`http://localhost:3001/contact_from_bot/${selectedContact.id}`)
-        .then(res => {
-          if (!res.ok) {
-            throw new Error('Erro ao carregar bots associados');
-          }
-          return res.json();
-        })
-        .then(data => {
-          const associatedIds = data.map((bot: Bot) => bot.id);
-          setAssociatedBots(data); // Definir bots associados
-          setAvailableBots(bots.filter(bot => !associatedIds.includes(bot.id))); // Definir bots disponíveis
-        })
-        .catch(error => {
-          console.error('Erro ao carregar bots associados:', error);
-          setError('Erro ao carregar bots associados');
-        });
+    loadContacts(contactPage, contactSearchTerm);
+  }, [contactPage, contactSearchTerm, loadContacts]);
+
+  // Carregar bots ao carregar o componente ou quando searchTerm ou página mudarem
+  useEffect(() => {
+    loadBots(botPage, botSearchTerm);
+  }, [botPage, botSearchTerm, loadBots]);
+
+  const handleAssociateBot = async (botId: number) => {
+    if (selectedContactId) {
+      await associateBotToContact(selectedContactId, botId);
+      alert(`Bot ${botId} associado ao contato ${selectedContactId}`);
+    } else {
+      alert('Por favor, selecione um contato antes de associar um bot.');
     }
-  }, [selectedContact, bots]);
-
-  const handleAssociateBot = (bot: Bot) => {
-    if (!selectedContact) return;
-    fetch(`http://localhost:3001/associate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contact_id: selectedContact.id, bot_id: bot.id }),
-    })
-      .then(() => {
-        setAssociatedBots([...associatedBots, bot]);
-        setAvailableBots(availableBots.filter(b => b.id !== bot.id));
-      })
-      .catch(err => {
-        console.error('Erro ao associar bot:', err);
-        setError('Erro ao associar bot');
-      });
-  };
-
-  const handleRemoveBot = (bot: Bot) => {
-    if (!selectedContact) return;
-    fetch(`http://localhost:3001/disassociate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contact_id: selectedContact.id, bot_id: bot.id }),
-    })
-      .then(() => {
-        setAvailableBots([...availableBots, bot]);
-        setAssociatedBots(associatedBots.filter(b => b.id !== bot.id));
-      })
-      .catch(err => {
-        console.error('Erro ao remover bot:', err);
-        setError('Erro ao remover bot');
-      });
   };
 
   return (
-    <div>
-      <h3>Selecione um Contato</h3>
-      <input
-        type="text"
-        placeholder="Pesquisar por nome ou descrição"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      {error && <p style={{ color: 'red' }}>{error}</p>} {/* Exibir erros de carregamento */}
-      <ul>
-        {filteredContacts.map(contact => (
-          <li
-            key={contact.id}
-            onClick={() => setSelectedContact(contact)}
-            style={{ cursor: 'pointer', color: selectedContact?.id === contact.id ? 'blue' : 'black' }}
-          >
-            {contact.name || 'Sem nome'} - {contact.description || 'Sem descrição'}
-          </li>
-        ))}
-      </ul>
-
-      {selectedContact && (
-        <div>
-          <h3>Associar Bots ao Contato: {selectedContact.name || 'Sem nome'}</h3>
-
-          <div className="bot-lists">
-            <div>
-              <h4>Bots Disponíveis</h4>
-              <ul>
-                {availableBots.map(bot => (
-                  <li key={bot.id}>
-                    {bot.alias} - {bot.name}
-                    <button onClick={() => handleAssociateBot(bot)}>Associar</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4>Bots Associados</h4>
-              <ul>
-                {associatedBots.map(bot => (
-                  <li key={bot.id}>
-                    {bot.alias} - {bot.name}
-                    <button onClick={() => handleRemoveBot(bot)}>Remover</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+    <div className="association-container">
+      <div className="contact-column">
+        <h3>Contatos</h3>
+        <input
+          type="text"
+          placeholder="Buscar contatos por nome ou descrição"
+          value={contactSearchTerm}
+          onChange={(e) => setContactSearchTerm(e.target.value)}
+        />
+        <ul>
+          {contacts.map(contact => (
+            <li key={contact.id}>
+              <button onClick={() => setSelectedContactId(contact.id)} className={selectedContactId === contact.id ? 'selected' : ''}>
+                {contact.name} - {contact.description}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="pagination">
+          <button onClick={() => setContactPage(contactPage - 1)} disabled={contactPage === 1}>Anterior</button>
+          <button onClick={() => setContactPage(contactPage + 1)} disabled={contactPage * itemsPerPage >= totalContacts}>Próximo</button>
         </div>
-      )}
+      </div>
+
+      <div className="bot-column">
+        <h3>Bots</h3>
+        <input
+          type="text"
+          placeholder="Buscar bots por nome ou descrição"
+          value={botSearchTerm}
+          onChange={(e) => setBotSearchTerm(e.target.value)}
+        />
+        <ul>
+          {bots.map(bot => (
+            <li key={bot.id}>
+              {bot.alias} - {bot.name}
+              <button onClick={() => handleAssociateBot(bot.id!)}>Associar ao Contato</button>
+            </li>
+          ))}
+        </ul>
+        <div className="pagination">
+          <button onClick={() => setBotPage(botPage - 1)} disabled={botPage === 1}>Anterior</button>
+          <button onClick={() => setBotPage(botPage + 1)} disabled={botPage * itemsPerPage >= totalBots}>Próximo</button>
+        </div>
+      </div>
     </div>
   );
 };
