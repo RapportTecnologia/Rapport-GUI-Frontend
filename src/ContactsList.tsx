@@ -1,4 +1,6 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faEdit } from '@fortawesome/free-solid-svg-icons';
 
 interface Contact {
   id?: number;
@@ -25,8 +27,12 @@ const ContactsList: React.FC<ContactsListProps> = ({ contacts, onEdit, onDelete 
       {contacts.map(contact => (
         <li key={contact.id}>
           {contact.name} - {contact.description} ({contact.type} - {contact.origin})
-          <button onClick={() => onEdit(contact)}>Editar</button>
-          <button onClick={() => onDelete(contact.id!)}>Apagar</button>
+          <button onClick={() => onEdit(contact)}>
+            <FontAwesomeIcon icon={faEdit} />
+          </button>
+          <button onClick={() => onDelete(contact.id!)}>
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </li>
       ))}
     </ul>

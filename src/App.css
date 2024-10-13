@@ -133,3 +133,35 @@ button.selected {
   background-color: #007BFF;
   color: white;
 }
+
+/* Suavizar as cores dos botões */
+button {
+  background-color: #f0f0f0; /* Cor suave */
+  border: none;
+  padding: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #d3d3d3; /* Efeito de hover mais escuro */
+}
+
+/* Ícones de lixeira e edição */
+button svg {
+  color: #555; /* Cor do ícone */
+}
+
+/* Alinhar itens da lista */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}

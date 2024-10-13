@@ -1,4 +1,6 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faEdit } from '@fortawesome/free-solid-svg-icons';
 
 interface Bot {
   id?: number;
@@ -14,7 +16,7 @@ interface BotsListProps {
 
 const BotsList: React.FC<BotsListProps> = ({ bots, onEdit, onDelete }) => {
   if (!bots || bots.length === 0) {
-    return <p>Nenhum bot encontrado.</p>;  // Mensagem se não houver bots
+    return <p>Nenhum bot encontrado.</p>;
   }
 
   return (
@@ -22,8 +24,12 @@ const BotsList: React.FC<BotsListProps> = ({ bots, onEdit, onDelete }) => {
       {bots.map(bot => (
         <li key={bot.id}>
           {bot.alias} - {bot.name}
-          <button onClick={() => onEdit(bot)}>Editar</button>
-          <button onClick={() => onDelete(bot.id!)}>Apagar</button>
+          <button onClick={() => onEdit(bot)}>
+            <FontAwesomeIcon icon={faEdit} />
+          </button>
+          <button onClick={() => onDelete(bot.id!)}>
+            <FontAwesomeIcon icon={faTrash} />
+          </button>
         </li>
       ))}
     </ul>
