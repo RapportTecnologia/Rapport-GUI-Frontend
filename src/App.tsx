@@ -4,23 +4,8 @@ import BotsList from './BotsList';
 import AssociationTab from './AssociationTab';
 import ContactForm from './ContactForm';
 import BotForm from './BotForm';
+import {Contact, Bot} from './types'
 import './App.css';
-
-interface Contact {
-  id?: number;
-  name: string;
-  description: string;
-  type: string;
-  origin: string;
-  contact: string;
-}
-
-interface Bot {
-  id?: number;
-  alias: string;
-  name: string;
-  contactId?: number;
-}
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('contacts');

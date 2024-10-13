@@ -315,23 +315,6 @@ button.selected {
   color: white;
 }
 
-
-/* Botão de seleção de contato menor */
-button.small-btn {
-  padding: 5px 10px; /* Botão menor */
-  background-color: #4a90e2;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-  margin-bottom: 5px;
-}
-
-button.small-btn:hover {
-  background-color: #357abd; /* Azul mais escuro no hover */
-}
-
 button.selected {
   background-color: #ff7b54; /* Botão selecionado em laranja */
 }
@@ -346,6 +329,47 @@ button.link-btn {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s ease;
+}
+
+/* Botão com ícone de associação (sem fundo) */
+button.link-btn {
+  background: none; /* Remove o fundo */
+  color: #4a90e2; /* Cor azul apenas no ícone */
+  border: none;
+  padding: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+/* Botão de seleção de contato menor */
+button.small-btn {
+  padding: 5px 10px;
+  background-color: #f0f0f0; /* Cor padrão sem selecionar */
+  color: #333; /* Cor do texto padrão */
+  border: 1px solid #ccc;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin-bottom: 5px;
+}
+
+/* Hover sem selecionar */
+button.small-btn:hover {
+  background-color: #e0e0e0; /* Cinza mais escuro no hover */
+  color: #000;
+}
+
+/* Botão selecionado */
+button.small-btn.selected {
+  background-color: #ff7b54; /* Cor laranja para selecionado */
+  color: white; /* Texto branco quando selecionado */
+}
+
+/* Hover enquanto selecionado */
+button.small-btn.selected:hover {
+  background-color: #ff5733; /* Laranja mais escuro no hover enquanto selecionado */
+  color: white;
 }
 
 /* Botão com ícone de associação (sem fundo) */

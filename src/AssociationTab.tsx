@@ -1,21 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLink } from '@fortawesome/free-solid-svg-icons'; // Ícone de link para associação
-
-interface Contact {
-  id?: number;
-  name: string;
-  description: string;
-  type: string;
-  origin: string;
-  contact: string;
-}
-
-interface Bot {
-  id: number;
-  alias: string;
-  name: string;
-}
+import { Contact, Bot} from './types'
 
 interface AssociationTabProps {
   fetchContacts: (page: number, searchTerm: string) => Promise<{ contacts: Contact[]; total: number }>;
@@ -71,6 +57,15 @@ const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBot
     }
   };
 
+  // Função de push-pull para selecionar/deselecionar contato
+  const toggleContactSelection = (contactId: number) => {
+    if (selectedContactId === contactId) {
+      setSelectedContactId(null); // Deselecionar
+    } else {
+      setSelectedContactId(contactId); // Selecionar
+    }
+  };
+
   return (
     <div className="association-container">
       <div className="contact-column">
@@ -85,8 +80,8 @@ const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBot
           {contacts.map(contact => (
             <li key={contact.id}>
               <button
-                onClick={() => setSelectedContactId(contact.id as number)}
-                className={selectedContactId === contact.id ? 'selected small-btn' : 'small-btn'}
+                onClick={() => toggleContactSelection(contact.id as number)}
+                className={`small-btn ${selectedContactId === contact.id ? 'selected' : ''}`}
               >
                 {contact.name} - {contact.description}
               </button>
@@ -111,7 +106,7 @@ const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBot
           {bots.map(bot => (
             <li key={bot.id}>
               {bot.alias} - {bot.name}
-              <button onClick={() => handleAssociateBot(bot.id)} className="link-btn">
+              <button onClick={() => handleAssociateBot(bot.id as number)} className="link-btn">
                 <FontAwesomeIcon icon={faLink} /> {/* Ícone de associação */}
               </button>
             </li>
