@@ -123,12 +123,6 @@ input:focus, select:focus {
   width: 45%;
 }
 
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
 button.selected {
   background-color: #007BFF;
   color: white;
@@ -164,4 +158,213 @@ li {
   justify-content: space-between;
   padding: 10px;
   border-bottom: 1px solid #ddd;
+}
+
+/* Estilos principais */
+body {
+  background-color: #f7f9fc; /* Fundo principal suave */
+  font-family: Arial, sans-serif;
+  color: #333333; /* Cor principal do texto */
+}
+
+.table-container {
+  display: flex;
+  flex-direction: column;
+  margin: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table-header, .table-row {
+  display: flex;
+  padding: 10px;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.table-header {
+  background-color: #4a90e2; /* Fundo da tabela */
+  color: white; /* Cor do texto */
+  font-weight: bold;
+}
+
+.table-row:nth-child(even) {
+  background-color: #f0f0f0; /* Linhas pares com cor suave */
+}
+
+.table-row div {
+  flex: 1;
+  text-align: center;
+}
+
+/* Estilos para os botões de ação */
+.actions {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+button {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 10px;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+/* Botão de editar com cor mais suave */
+.edit-button svg {
+  color: #4a90e2;
+}
+
+.edit-button:hover {
+  background-color: #e1f0ff; /* Efeito hover */
+}
+
+/* Botão de apagar com cor laranja */
+.delete-button svg {
+  color: #ff7b54;
+}
+
+.delete-button:hover {
+  background-color: #ffe6e1; /* Efeito hover */
+}
+
+/* Botões de navegação de página */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  background-color: #4a90e2; /* Cor azul clara para botões de paginação */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.pagination button:hover {
+  background-color: #357abd; /* Azul mais escuro no hover */
+}
+
+.pagination button:disabled {
+  background-color: #ccc; /* Cor desabilitada para botões inativos */
+  cursor: not-allowed;
+}
+
+.pagination button:disabled:hover {
+  background-color: #ccc; /* Manter cor desabilitada no hover */
+}
+
+/* Estilos para as guias (tabs) */
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  background-color: #4a90e2; /* Azul suave */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tab-button:hover {
+  background-color: #357abd; /* Azul mais escuro no hover */
+}
+
+.tab-button.active {
+  background-color: #ff7b54; /* Cor de destaque para a aba ativa */
+}
+
+/* Botão padrão */
+button {
+  background-color: #4a90e2; /* Azul claro para botões */
+  color: white; /* Texto em branco */
+  border: none;
+  padding: 10px 15px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease; /* Efeito de transição suave */
+}
+
+/* Cor do botão ao passar o mouse (hover) */
+button:hover {
+  background-color: #357abd; /* Azul mais escuro no hover */
+  color: white; /* Mantém o texto em branco */
+}
+
+/* Botão selecionado (para contato ativo) */
+button.selected {
+  background-color: #ff7b54; /* Laranja suave para o botão selecionado */
+  color: white;
+}
+
+
+/* Botão de seleção de contato menor */
+button.small-btn {
+  padding: 5px 10px; /* Botão menor */
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  margin-bottom: 5px;
+}
+
+button.small-btn:hover {
+  background-color: #357abd; /* Azul mais escuro no hover */
+}
+
+button.selected {
+  background-color: #ff7b54; /* Botão selecionado em laranja */
+}
+
+/* Botão com ícone de associação */
+button.link-btn {
+  background-color: #4a90e2; /* Azul claro */
+  color: white;
+  border: none;
+  padding: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+/* Botão com ícone de associação (sem fundo) */
+button.link-btn {
+  background: none; /* Remove o fundo */
+  color: #4a90e2; /* Cor azul apenas no ícone */
+  border: none;
+  padding: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+button.link-btn:hover {
+  color: #ff7b54; /* Muda para laranja no hover para destacar */
+}
+
+/* Botão desabilitado (se necessário) */
+button:disabled {
+  color: #ccc;
+  cursor: not-allowed;
 }

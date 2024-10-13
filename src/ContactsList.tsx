@@ -15,27 +15,49 @@ interface ContactsListProps {
   contacts: Contact[];
   onEdit: (contact: Contact) => void;
   onDelete: (id: number) => void;
+  currentPage: number; // Página atual
+  totalPages: number;  // Total de páginas
+  onNextPage: () => void; // Função para ir para a próxima página
+  onPrevPage: () => void; // Função para ir para a página anterior
 }
 
-const ContactsList: React.FC<ContactsListProps> = ({ contacts, onEdit, onDelete }) => {
+const ContactsList: React.FC<ContactsListProps> = ({ contacts, onEdit, onDelete, currentPage, totalPages, onNextPage, onPrevPage }) => {
   if (!contacts || contacts.length === 0) {
     return <p>Nenhum contato encontrado.</p>;
   }
 
   return (
-    <ul>
+    <div className="table-container">
+      <div className="table-header">
+        <div>Nome</div>
+        <div>Descrição</div>
+        <div>Tipo</div>
+        <div>Origem</div>
+        <div>Ações</div>
+      </div>
       {contacts.map(contact => (
-        <li key={contact.id}>
-          {contact.name} - {contact.description} ({contact.type} - {contact.origin})
-          <button onClick={() => onEdit(contact)}>
-            <FontAwesomeIcon icon={faEdit} />
-          </button>
-          <button onClick={() => onDelete(contact.id!)}>
-            <FontAwesomeIcon icon={faTrash} />
-          </button>
-        </li>
+        <div className="table-row" key={contact.id}>
+          <div>{contact.name}</div>
+          <div>{contact.description}</div>
+          <div>{contact.type}</div>
+          <div>{contact.origin}</div>
+          <div className="actions">
+            <button onClick={() => onEdit(contact)} className="edit-button">
+              <FontAwesomeIcon icon={faEdit} />
+            </button>
+            <button onClick={() => onDelete(contact.id!)} className="delete-button">
+              <FontAwesomeIcon icon={faTrash} />
+            </button>
+          </div>
+        </div>
       ))}
-    </ul>
+
+      {/* Botões de paginação */}
+      <div className="pagination">
+        <button onClick={onPrevPage} disabled={currentPage === 1}>Anterior</button>
+        <button onClick={onNextPage} disabled={currentPage === totalPages}>Próximo</button>
+      </div>
+    </div>
   );
 };
 

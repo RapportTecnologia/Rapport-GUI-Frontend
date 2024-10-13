@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ContactsList from './ContactsList';
-import ContactForm from './ContactForm';
 import BotsList from './BotsList';
-import BotForm from './BotForm';
 import AssociationTab from './AssociationTab';
+import ContactForm from './ContactForm';
+import BotForm from './BotForm';
 import './App.css';
 
 interface Contact {
@@ -23,79 +23,52 @@ interface Bot {
 }
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('contacts'); // Gerenciar abas
+  const [activeTab, setActiveTab] = useState('contacts');
+
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [editingContact, setEditingContact] = useState<Contact | undefined>(undefined);
-  const [contactSearchTerm, setContactSearchTerm] = useState('');
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [contactPage, setContactPage] = useState(1);
   const [totalContacts, setTotalContacts] = useState(0);
+  const [contactSearchTerm, setContactSearchTerm] = useState('');
 
   const [bots, setBots] = useState<Bot[]>([]);
-  const [editingBot, setEditingBot] = useState<Bot | undefined>(undefined);
-  const [botSearchTerm, setBotSearchTerm] = useState('');
+  const [editingBot, setEditingBot] = useState<Bot | null>(null);
   const [botPage, setBotPage] = useState(1);
   const [totalBots, setTotalBots] = useState(0);
+  const [botSearchTerm, setBotSearchTerm] = useState('');
 
   const itemsPerPage = 10;
 
   // Função para buscar contatos do backend
-  const fetchContacts = async (page: number, searchTerm: string) => {
+  const fetchContacts = async (page: number, searchTerm: string): Promise<{ contacts: Contact[]; total: number }>  => {
     const res = await fetch(`http://localhost:3001/contacts?limit=${itemsPerPage}&offset=${(page - 1) * itemsPerPage}&search=${searchTerm}`);
     const data = await res.json();
     setContacts(data.contacts || []);
-    setTotalContacts(data.total);
-    return data;
+    setTotalContacts(data.total || 0);
+    return {
+      contacts: data.contacts || [],
+      total: data.total || 0,
+    };
   };
 
   // Função para buscar bots do backend
   const fetchBots = async (page: number, searchTerm: string) => {
-    try {
-      const res = await fetch(`http://localhost:3001/bots?limit=${itemsPerPage}&offset=${(page - 1) * itemsPerPage}&search=${searchTerm}`);
-      
-      if (!res.ok) {
-        throw new Error(`Erro ao buscar bots: ${res.statusText}`);
-      }
-  
-      const data = await res.json();
-  
-      // Verificar se a resposta possui a estrutura correta
-      if (!data.bots || !Array.isArray(data.bots)) {
-        throw new Error("Estrutura de dados inválida para bots.");
-      }
-  
-      setBots(data.bots); // Atualiza os bots
-      setTotalBots(data.total || 0);
-      return data;
-    } catch (error) {
-      console.error("Erro ao buscar bots:", error);
-    }
-  };
-  
-
-  const associateBotToContact = async (contactId: number, botId: number) => {
-    try {
-      const res = await fetch(`http://localhost:3001/contact_from_bot`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contactId, botId }),
-      });
-  
-      if (!res.ok) {
-        throw new Error(`Erro ao associar bot ao contato: ${res.statusText}`);
-      }
-  
-      alert(`Bot ${botId} associado com sucesso ao contato ${contactId}`);
-    } catch (error) {
-      console.error('Erro ao associar bot ao contato:', error);
-    }
+    const res = await fetch(`http://localhost:3001/bots?limit=${itemsPerPage}&offset=${(page - 1) * itemsPerPage}&search=${searchTerm}`);
+    const data = await res.json();
+    setBots(data.bots || []);
+    setTotalBots(data.total || 0);
+    return {
+      bots: data.bots || [],
+      total: data.total || 0,
+    };
   };
 
-  // Buscar contatos ao carregar ou quando searchTerm ou página mudarem
+  // Carregar contatos ao montar o componente ou quando o page/searchTerm mudar
   useEffect(() => {
     fetchContacts(contactPage, contactSearchTerm);
   }, [contactPage, contactSearchTerm]);
 
-  // Buscar bots ao carregar ou quando searchTerm ou página mudarem
+  // Carregar bots ao montar o componente ou quando o page/searchTerm mudar
   useEffect(() => {
     fetchBots(botPage, botSearchTerm);
   }, [botPage, botSearchTerm]);
@@ -115,8 +88,8 @@ const App: React.FC = () => {
         body: JSON.stringify(contact),
       });
     }
-    setEditingContact(undefined);
-    fetchContacts(contactPage, contactSearchTerm);
+    setEditingContact(null);
+    fetchContacts(contactPage, contactSearchTerm); // Atualizar lista de contatos
   };
 
   // Função para editar contato
@@ -127,7 +100,7 @@ const App: React.FC = () => {
   // Função para deletar contato
   const handleDeleteContact = async (id: number) => {
     await fetch(`http://localhost:3001/contacts/${id}`, { method: 'DELETE' });
-    fetchContacts(contactPage, contactSearchTerm);
+    fetchContacts(contactPage, contactSearchTerm); // Atualizar lista de contatos
   };
 
   // Função para lidar com a submissão do formulário de bots
@@ -145,8 +118,8 @@ const App: React.FC = () => {
         body: JSON.stringify(bot),
       });
     }
-    setEditingBot(undefined);
-    fetchBots(botPage, botSearchTerm);
+    setEditingBot(null);
+    fetchBots(botPage, botSearchTerm); // Atualizar lista de bots
   };
 
   // Função para editar bot
@@ -157,68 +130,91 @@ const App: React.FC = () => {
   // Função para deletar bot
   const handleDeleteBot = async (id: number) => {
     await fetch(`http://localhost:3001/bots/${id}`, { method: 'DELETE' });
-    fetchBots(botPage, botSearchTerm);
+    fetchBots(botPage, botSearchTerm); // Atualizar lista de bots
+  };
+
+  // Função para associar bot a contato
+  const associateBotToContact = async (contactId: number, botId: number) => {
+    await fetch(`http://localhost:3001/contact_from_bot`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contactId, botId }),
+    });
+    alert(`Bot ${botId} associado com sucesso ao contato ${contactId}`);
   };
 
   return (
     <div className="app-container">
       <h1>Gerenciamento de Contatos e Bots</h1>
 
-      {/* Abas de navegação */}
+      {/* Guias de navegação */}
       <div className="tabs">
-        <button onClick={() => setActiveTab('contacts')}>Contatos</button>
-        <button onClick={() => setActiveTab('bots')}>Bots</button>
-        <button onClick={() => setActiveTab('association')}>Associação de Contato com Bot</button>
+        <button 
+          onClick={() => setActiveTab('contacts')} 
+          className={`tab-button ${activeTab === 'contacts' ? 'active' : ''}`}>
+          Contatos
+        </button>
+        <button 
+          onClick={() => setActiveTab('bots')} 
+          className={`tab-button ${activeTab === 'bots' ? 'active' : ''}`}>
+          Bots
+        </button>
+        <button 
+          onClick={() => setActiveTab('association')} 
+          className={`tab-button ${activeTab === 'association' ? 'active' : ''}`}>
+          Associação
+        </button>
       </div>
 
-      {/* Conteúdo da aba de Contatos */}
+      {/* Conteúdo das guias */}
       {activeTab === 'contacts' && (
-        <div>
-          <h2>Contatos</h2>
+        <>
           <input
             type="text"
             placeholder="Buscar contatos"
             value={contactSearchTerm}
             onChange={(e) => setContactSearchTerm(e.target.value)}
           />
-          <ContactForm contactToEdit={editingContact} onSubmit={handleContactSubmit} />
-          <ContactsList contacts={contacts} onEdit={handleEditContact} onDelete={handleDeleteContact} />
-          <button onClick={() => setContactPage(contactPage - 1)} disabled={contactPage === 1}>
-            Página Anterior
-          </button>
-          <button onClick={() => setContactPage(contactPage + 1)} disabled={contactPage * itemsPerPage >= totalContacts}>
-            Próxima Página
-          </button>
-        </div>
+          <ContactForm contactToEdit={editingContact ?? undefined} onSubmit={handleContactSubmit} />
+          <ContactsList
+            contacts={contacts}
+            onEdit={handleEditContact}
+            onDelete={handleDeleteContact}
+            currentPage={contactPage}
+            totalPages={Math.ceil(totalContacts / itemsPerPage)}
+            onNextPage={() => setContactPage(contactPage + 1)}
+            onPrevPage={() => setContactPage(contactPage - 1)}
+          />
+        </>
       )}
 
-      {/* Conteúdo da aba de Bots */}
       {activeTab === 'bots' && (
-        <div>
-          <h2>Bots</h2>
+        <>
           <input
             type="text"
             placeholder="Buscar bots"
             value={botSearchTerm}
             onChange={(e) => setBotSearchTerm(e.target.value)}
           />
-          <BotForm botToEdit={editingBot} onSubmit={handleBotSubmit} />
-          <BotsList bots={bots} onEdit={handleEditBot} onDelete={handleDeleteBot} />
-          <button onClick={() => setBotPage(botPage - 1)} disabled={botPage === 1}>
-            Página Anterior
-          </button>
-          <button onClick={() => setBotPage(botPage + 1)} disabled={botPage * itemsPerPage >= totalBots}>
-            Próxima Página
-          </button>
-        </div>
+          <BotForm botToEdit={editingBot ?? undefined} onSubmit={handleBotSubmit} />
+          <BotsList
+            bots={bots}
+            onEdit={handleEditBot}
+            onDelete={handleDeleteBot}
+            currentPage={botPage}
+            totalPages={Math.ceil(totalBots / itemsPerPage)}
+            onNextPage={() => setBotPage(botPage + 1)}
+            onPrevPage={() => setBotPage(botPage - 1)}
+          />
+        </>
       )}
 
-      {/* Conteúdo da aba de Associação */}
       {activeTab === 'association' && (
-        <div>
-          <h2>Associação de Contatos com Bots</h2>
-          <AssociationTab fetchBots={fetchBots} fetchContacts={fetchContacts} associateBotToContact={associateBotToContact} />
-        </div>
+        <AssociationTab
+          fetchContacts={fetchContacts}
+          fetchBots={fetchBots}
+          associateBotToContact={associateBotToContact}
+        />
       )}
     </div>
   );

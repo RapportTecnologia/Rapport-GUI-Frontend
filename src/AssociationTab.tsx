@@ -1,65 +1,73 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLink } from '@fortawesome/free-solid-svg-icons'; // Ícone de link para associação
 
 interface Contact {
   id?: number;
   name: string;
   description: string;
+  type: string;
+  origin: string;
+  contact: string;
 }
 
 interface Bot {
-  id?: number;
+  id: number;
   alias: string;
   name: string;
 }
 
 interface AssociationTabProps {
-  fetchContacts: (page: number, searchTerm: string) => Promise<{ contacts: Contact[], total: number }>;
-  fetchBots: (page: number, searchTerm: string) => Promise<{ bots: Bot[], total: number }>;
+  fetchContacts: (page: number, searchTerm: string) => Promise<{ contacts: Contact[]; total: number }>;
+  fetchBots: (page: number, searchTerm: string) => Promise<{ bots: Bot[]; total: number }>;
   associateBotToContact: (contactId: number, botId: number) => Promise<void>;
 }
 
 const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBots, associateBotToContact }) => {
-  const [selectedContactId, setSelectedContactId] = useState<number | undefined>(undefined);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [bots, setBots] = useState<Bot[]>([]);
-  const [contactSearchTerm, setContactSearchTerm] = useState('');
-  const [botSearchTerm, setBotSearchTerm] = useState('');
+  const [selectedContactId, setSelectedContactId] = useState<number | null>(null);
+
   const [contactPage, setContactPage] = useState(1);
   const [botPage, setBotPage] = useState(1);
+
+  const [contactSearchTerm, setContactSearchTerm] = useState('');
+  const [botSearchTerm, setBotSearchTerm] = useState('');
+
   const [totalContacts, setTotalContacts] = useState(0);
   const [totalBots, setTotalBots] = useState(0);
+
   const itemsPerPage = 10;
 
-  // Função para carregar contatos, "memorize" com useCallback
-  const loadContacts = useCallback(async (page: number, searchTerm: string) => {
+  // Função para carregar contatos paginados
+  const loadContacts = async (page: number, searchTerm: string) => {
     const { contacts, total } = await fetchContacts(page, searchTerm);
     setContacts(contacts);
     setTotalContacts(total);
-  }, [fetchContacts]);
+  };
 
-  // Função para carregar bots, "memorize" com useCallback
-  const loadBots = useCallback(async (page: number, searchTerm: string) => {
+  // Função para carregar bots paginados
+  const loadBots = async (page: number, searchTerm: string) => {
     const { bots, total } = await fetchBots(page, searchTerm);
     setBots(bots);
     setTotalBots(total);
-  }, [fetchBots]);
+  };
 
-  // Carregar contatos ao carregar o componente ou quando searchTerm ou página mudarem
+  // Carregar contatos e bots ao montar o componente ou quando página/searchTerm mudar
   useEffect(() => {
     loadContacts(contactPage, contactSearchTerm);
-  }, [contactPage, contactSearchTerm, loadContacts]);
+  }, [contactPage, contactSearchTerm]);
 
-  // Carregar bots ao carregar o componente ou quando searchTerm ou página mudarem
   useEffect(() => {
     loadBots(botPage, botSearchTerm);
-  }, [botPage, botSearchTerm, loadBots]);
+  }, [botPage, botSearchTerm]);
 
   const handleAssociateBot = async (botId: number) => {
     if (selectedContactId) {
       await associateBotToContact(selectedContactId, botId);
-      alert(`Bot ${botId} associado ao contato ${selectedContactId}`);
+      alert(`Bot ${botId} associado com sucesso ao contato ${selectedContactId}`);
     } else {
-      alert('Por favor, selecione um contato antes de associar um bot.');
+      alert('Selecione um contato antes de associar.');
     }
   };
 
@@ -76,7 +84,10 @@ const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBot
         <ul>
           {contacts.map(contact => (
             <li key={contact.id}>
-              <button onClick={() => setSelectedContactId(contact.id)} className={selectedContactId === contact.id ? 'selected' : ''}>
+              <button
+                onClick={() => setSelectedContactId(contact.id as number)}
+                className={selectedContactId === contact.id ? 'selected small-btn' : 'small-btn'}
+              >
                 {contact.name} - {contact.description}
               </button>
             </li>
@@ -100,7 +111,9 @@ const AssociationTab: React.FC<AssociationTabProps> = ({ fetchContacts, fetchBot
           {bots.map(bot => (
             <li key={bot.id}>
               {bot.alias} - {bot.name}
-              <button onClick={() => handleAssociateBot(bot.id!)}>Associar ao Contato</button>
+              <button onClick={() => handleAssociateBot(bot.id)} className="link-btn">
+                <FontAwesomeIcon icon={faLink} /> {/* Ícone de associação */}
+              </button>
             </li>
           ))}
         </ul>
